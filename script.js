@@ -103,3 +103,13 @@ for (const mov of movements) {
   movementsUSDfor.push(mov * eurToUsd);
 }
 
+const deposits = movements.filter(function (mov) {
+  return mov > 0;
+});
+
+const depositFor = [];
+for (const mov of movements) { if (mov > 0) { depositFor.push(mov) } }
+console.log(depositFor);
+const withdrawals = movements.filter(mov => mov < 0);
+console.log(withdrawals);
+
