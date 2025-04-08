@@ -119,8 +119,24 @@ const createUserNames = function (accs) {
 };
 createUserNames(accounts);
 
+/// login header
 
+let currentAccount;
 
+btnLogin.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
+  console.log(currentAccount);
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split('')[0]}`;
+    containerApp.style.opacity = 100;
+
+    console.log('Login');
+  }
+});
+
+// lecture
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
@@ -159,7 +175,6 @@ const max = movements.reduce((acc, mov) => {
 
 console.log(max);
 
-
 // Coding Challenge #2
 
 // Let's go back to Julia and Kate's study about dogs. This time, they want to convert dog ages to human ages and calculate the average age of the dogs in their study.
@@ -193,3 +208,12 @@ console.log(max);
 //   .filter(mov => mov > 0)
 //   .map(mov => mov * eurToUsd)
 //   .reduce((acc, mov) => acc + mov, 0);
+
+// const calcAverageHumanAge = ages => ages
+//   .map(age => age <= 2 ? 2 * age : 16 + age * 4)
+//   .filter(age => age > 18)
+//   .reduce((acc, age, i, arr) => acc + age / arr.length, 0);
+
+// console.log(calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3]));
+
+
