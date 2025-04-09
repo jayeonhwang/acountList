@@ -76,9 +76,10 @@ const displayMovemnets = function (movements) {
   });
 };
 
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance} EUR`;
+const calcDisplayBalance = function (acc) {
+  const balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
+  acc.balance = balance;
+  labelBalance.textContent = `${acc.balance} €`;
 };
 
 const calcDisplaySummary = function (acc) {
@@ -113,70 +114,87 @@ const createUserNames = function (accs) {
 };
 createUserNames(accounts);
 
+const updateUI = function (acc) {
+  displayMovemnets(acc.movements);
+  calcDisplayBalance(acc);
+  calcDisplaySummary(acc);
+};
 /// login header
 
 let currentAccount;
 
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
+  console.log('login');
 
   currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
-  console.log(currentAccount);
   if (currentAccount?.pin === Number(inputLoginPin.value)) {
-    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]
-      }`;
+    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`;
     containerApp.style.opacity = 100;
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
     // display movement
-
-    displayMovemnets(currentAccount.movements);
-    calcDisplayBalance(currentAccount.movements);
-    calcDisplaySummary(currentAccount);
-
-    console.log('Login');
+    updateUI(currentAccount);
   }
 });
 
-// lecture
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
+  console.log(amount, receiverAcc);
+  if (amount > 0 &&
+    receiverAcc &&
+    currentAccount.balance >= amount &&
+    receiverAcc?.username !== currentAccount.username) {
+    //Doing the transfer
+    currentAccount.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+    updateUI(currentAccount);
+  }
 
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
-
-const eurToUsd = 1.1;
-
-const movementsUSD = movements.map(mov => mov * eurToUsd);
-
-const movementsUSDfor = [];
-for (const mov of movements) {
-  movementsUSDfor.push(mov * eurToUsd);
-}
-
-const deposits = movements.filter(function (mov) {
-  return mov > 0;
 });
 
-const depositFor = [];
-for (const mov of movements) { if (mov > 0) { depositFor.push(mov) } }
-console.log(depositFor);
-const withdrawals = movements.filter(mov => mov < 0);
-console.log(withdrawals);
+
+// lecture
+
+// const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+// const eurToUsd = 1.1;
+
+// const movementsUSD = movements.map(mov => mov * eurToUsd);
+
+// const movementsUSDfor = [];
+// for (const mov of movements) {
+//   movementsUSDfor.push(mov * eurToUsd);
+// }
+
+// const deposits = movements.filter(function (mov) {
+//   return mov > 0;
+// });
+
+// const depositFor = [];
+// for (const mov of movements) { if (mov > 0) { depositFor.push(mov) } }
+// console.log(depositFor);
+// const withdrawals = movements.filter(mov => mov < 0);
+// console.log(withdrawals);
 
 
-const balance = movements.reduce(function (acc, cur, i, arr) {
-  console.log(`Interation ${i}: ${acc}`);
-  return acc + cur;
-}, 0);
-console.log(balance);
+// const balance = movements.reduce(function (acc, cur, i, arr) {
+//   console.log(`Interation ${i}: ${acc}`);
+//   return acc + cur;
+// }, 0);
+// console.log(balance);
 
-const max = movements.reduce((acc, mov) => {
-  if (acc > mov)
-    return acc;
-  else
-    return mov;
-}, movements[0]);
+// const max = movements.reduce((acc, mov) => {
+//   if (acc > mov)
+//     return acc;
+//   else
+//     return mov;
+// }, movements[0]);
 
-console.log(max);
+// console.log(max);
 
 // Coding Challenge #2
 
