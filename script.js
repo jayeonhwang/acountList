@@ -85,16 +85,24 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovemnets = function (acc, movements, sort = false) {
+const displayMovemnets = function (acc, sort = false) {
 
   containerMovements.innerHTML = '';
 
-  const movs = sort ? acc.movements.slice().sort((a, b) => a - b) : acc.movements;
+  const combineMovsDates = acc.movements.map((mov, i) => ({
+    movement: mov,
+    movementDate: acc.movementsDates.at(i)
+  }));
+  console.log(combineMovsDates);
+  // const movs = sort ? acc.movements.slice().sort((a, b) => a - b) : acc.movements;
 
-  movs.forEach(function (mov, i) {
-    const type = mov > 0 ? `deposit` : `withdrawal`;
+  if (sort) { combineMovsDates.sort((a, b) => a.movement - b.movement) }
 
-    const date = new Date(acc.movementsDates[i]);
+  combineMovsDates.forEach(function (obj, i) {
+    const { movement, movementDate } = obj;
+    const type = movement > 0 ? `deposit` : `withdrawal`;
+
+    const date = new Date(movementDate);
     const day = `${date.getDate()}`.padStart(2, 0);
     const month = `${date.getMonth() + 1}`.padStart(2, 0);
     const year = date.getFullYear();
@@ -104,7 +112,7 @@ const displayMovemnets = function (acc, movements, sort = false) {
     <div class="movements__row">
       <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
       <div class="movements__date">${displayDate}</div>
-      <div class="movements__value">${mov.toFixed(2)}</div>
+      <div class="movements__value">${movement.toFixed(2)}</div>
     </div>
   `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -158,19 +166,6 @@ const updateUI = function (acc) {
 
 let currentAccount;
 
-// keep logged in
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
-
-const now = new Date();
-const day = `${now.getDate()}`.padStart(2, 0);
-const month = `${now.getMonth() + 1}`.padStart(2, 0);
-const year = now.getFullYear();
-const hour = now.getHours();
-const min = now.getMinutes();
-labelDate.textContent = `${day}/${month}/${year},${hour}:${min}`;
-
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
   console.log('login');
@@ -179,6 +174,14 @@ btnLogin.addEventListener('click', function (e) {
   if (currentAccount?.pin === Number(inputLoginPin.value)) {
     labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`;
     containerApp.style.opacity = 100;
+    const now = new Date();
+    const day = `${now.getDate()}`.padStart(2, 0);
+    const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    const year = now.getFullYear();
+    const hour = now.getHours();
+    const min = now.getMinutes();
+    labelDate.textContent = `${day}/${month}/${year},${hour}:${min}`;
+
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
@@ -199,6 +202,11 @@ btnTransfer.addEventListener('click', function (e) {
     //Doing the transfer
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
+    //add transfer date
+    currentAccount.movementsDates.push(new Date().toISOString());
+    receiverAcc.movementsDates.push(new Date().toISOString());
+
+    // update UI
     updateUI(currentAccount);
   }
 
@@ -212,6 +220,7 @@ btnLoan.addEventListener('click', function (e) {
   // loan allow when any deposit > 10% of loan
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
+    currentAccount.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
   }
   inputLoanAmount.value = '';
@@ -237,9 +246,9 @@ btnClose.addEventListener('click', function (e) {
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-  console.log('sort');
+
   // !sorted for changing sorted status
-  displayMovemnets(currentAccount.movements, !sorted);
+  displayMovemnets(currentAccount, !sorted);
   sorted = !sorted;
 });
 
