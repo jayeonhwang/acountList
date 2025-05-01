@@ -185,7 +185,32 @@ const updateUI = function (acc) {
 };
 // login header
 
-let currentAccount;
+const startLogoutTimer = function () {
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+
+    // In each call, print remianed time
+    labelTimer.textContent = `${min}:${sec}`;
+
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Login to get started`;
+      containerApp.style.opacity = 0;
+    }
+
+    time--;
+  };
+
+  ///set 5 min 
+  let time = 300;
+  tick();
+  const timer = setInterval(tick, 1000);
+
+  return timer;
+};
+
+let currentAccount, timer;
 
 const now = new Date();
 const options = {
@@ -213,6 +238,9 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
+    if (timer) clearInterval(timer);
+    timer = startLogoutTimer();
+
     // display movement
     updateUI(currentAccount);
   }
@@ -237,6 +265,8 @@ btnTransfer.addEventListener('click', function (e) {
 
     // update UI
     updateUI(currentAccount);
+    clearInterval(timer);
+    timer = startLogoutTimer();
   }
 
 });
@@ -248,9 +278,16 @@ btnLoan.addEventListener('click', function (e) {
 
   // loan allow when any deposit > 10% of loan
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    currentAccount.movements.push(amount);
-    currentAccount.movementsDates.push(new Date().toISOString());
-    updateUI(currentAccount);
+
+    setTimeout(function () {
+      currentAccount.movements.push(amount);
+      currentAccount.movementsDates.push(new Date().toISOString());
+      updateUI(currentAccount);
+
+      clearInterval(timer);
+      timer = startLogoutTimer();
+
+    }, 2500);
   }
   inputLoanAmount.value = '';
 });
@@ -280,7 +317,6 @@ btnSort.addEventListener('click', function (e) {
   displayMovemnets(currentAccount, !sorted);
   sorted = !sorted;
 });
-
 
 labelBalance.addEventListener('click', function () {
   const movementsUI = Array.from(document.querySelectorAll('.movements__value'), el => Number(el.textContent.replace('€', ''))
